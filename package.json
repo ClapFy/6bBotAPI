@@ -1,0 +1,46 @@
+{
+  "name": "krynbot",
+  "version": "1.0.0",
+  "description": "Mineflayer control system for 6b6t (offline accounts, lobby portals, CLI + HTTP API)",
+  "type": "module",
+  "bin": {
+    "krynbot": "./bin/krynbot.mjs"
+  },
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/api/KrynBot.ts",
+    "./api": "./src/api/KrynBot.ts"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "krynbot": "tsx src/index.ts",
+    "dev": "tsx src/index.ts shell",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mineflayer",
+    "minecraft",
+    "6b6t",
+    "bot"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.0",
+    "dotenv": "^17.2.1",
+    "mineflayer": "^4.33.0",
+    "mineflayer-pathfinder": "^2.4.5",
+    "vec3": "^0.1.10",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

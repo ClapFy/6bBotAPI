@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Kryn console</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="top">
+      <div class="brand">
+        <span class="mark">◆</span>
+        <div>
+          <p class="kicker">6b6t live ops</p>
+          <h1>Kryn console</h1>
+        </div>
+      </div>
+      <div class="ident">
+        <p id="ident-name">—</p>
+        <p id="ident-host">not connected</p>
+      </div>
+      <div class="phase-wrap">
+        <span class="phase" id="phase">idle</span>
+        <span class="link" id="ws-state">socket cold</span>
+      </div>
+    </header>
+
+    <main class="board">
+      <section class="panel vitals">
+        <h2>Vitals</h2>
+        <dl class="meta">
+          <div><dt>world</dt><dd id="world">—</dd></div>
+          <div><dt>dimension</dt><dd id="dimension">—</dd></div>
+          <div><dt>xyz</dt><dd id="xyz">—</dd></div>
+          <div><dt>ping</dt><dd id="ping">—</dd></div>
+          <div><dt>tab</dt><dd id="tab">—</dd></div>
+          <div><dt>uptime</dt><dd id="uptime">—</dd></div>
+        </dl>
+        <div class="bars">
+          <label>health <span id="hp-n">—</span></label>
+          <div class="bar hp" id="hp"><i></i></div>
+          <label>food <span id="food-n">—</span></label>
+          <div class="bar food" id="food"><i></i></div>
+        </div>
+        <p class="flags">
+          <button type="button" class="chip" id="toggle-reconnect" data-flag="autoReconnect">reconnect</button>
+          <button type="button" class="chip" id="toggle-lobby" data-flag="autoLobby">auto lobby</button>
+          <span class="chip ghost" id="hunt-state">hunt off</span>
+        </p>
+        <div class="actions">
+          <button type="button" data-rpc="join">join</button>
+          <button type="button" data-rpc="reconnect">rejoin</button>
+          <button type="button" data-rpc="leave" class="danger">leave</button>
+          <button type="button" data-rpc="hunt">hunt portals</button>
+          <button type="button" data-rpc="stop">stop</button>
+          <button type="button" data-rpc="skiplobby">skiplobby</button>
+        </div>
+        <p class="fault" id="fault" hidden></p>
+      </section>
+
+      <section class="panel chat">
+        <h2>Wire</h2>
+        <ol id="log" class="log"></ol>
+        <form id="say" class="say">
+          <input
+            id="say-input"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="say in chat, or /command"
+          />
+          <button type="submit">send</button>
+        </form>
+      </section>
+
+      <section class="panel roster">
+        <h2>Nearby <span id="player-count"></span></h2>
+        <ul id="players" class="list"></ul>
+      </section>
+
+      <section class="panel pack">
+        <div class="pack-head">
+          <h2>Pack</h2>
+          <p class="hint" id="pack-held">hands empty</p>
+        </div>
+        <div class="inv" id="inv">
+          <div class="inv-gear" id="inv-gear"></div>
+          <div class="inv-main" id="inv-main"></div>
+          <div class="inv-hot" id="inv-hot"></div>
+        </div>
+        <p class="inv-name" id="inv-name">click a slot · click another to swap</p>
+        <div class="inv-acts">
+          <button type="button" data-inv="hold">hold</button>
+          <button type="button" data-inv="drop">drop</button>
+          <button type="button" data-inv="dropStack">toss</button>
+          <button type="button" data-inv="equip">equip</button>
+          <button type="button" data-inv="offhand">offhand</button>
+          <button type="button" data-inv="use">use</button>
+        </div>
+      </section>
+
+      <section class="panel move">
+        <h2>Steer</h2>
+        <p class="hint">WASD move · space jump · shift sneak · R sprint</p>
+        <div class="pad" aria-hidden="true">
+          <b data-k="forward">W</b>
+          <div class="row">
+            <b data-k="left">A</b>
+            <b data-k="back">S</b>
+            <b data-k="right">D</b>
+          </div>
+        </div>
+        <form id="goto" class="goto">
+          <input name="x" placeholder="x" inputmode="decimal" />
+          <input name="y" placeholder="y" inputmode="decimal" />
+          <input name="z" placeholder="z" inputmode="decimal" />
+          <button type="submit">goto</button>
+        </form>
+      </section>
+
+      <section class="panel survey" id="survey">
+        <div class="survey-head">
+          <div>
+            <h2>Survey flight</h2>
+            <p class="hint" id="survey-hint">follow: WASD steers the bot · orbit/fly: click the stage, WASD is camera · esc</p>
+          </div>
+          <p class="survey-meta" id="survey-meta">no terrain yet</p>
+          <div class="survey-tools">
+            <button type="button" class="rad" data-r="14">14m</button>
+            <button type="button" class="rad on" data-r="20">20m</button>
+            <button type="button" class="rad" data-r="28">28m</button>
+            <button type="button" id="survey-follow">follow</button>
+            <button type="button" id="survey-orbit" class="on">orbit</button>
+          </div>
+        </div>
+        <div class="survey-stage">
+          <canvas id="world3d" tabindex="0" aria-label="3D survey of blocks around the bot"></canvas>
+          <div class="crosshair" aria-hidden="true"></div>
+          <p class="survey-hud" id="survey-hud">aim into the void</p>
+          <p class="survey-compass" id="survey-compass">N</p>
+        </div>
+      </section>
+    </main>
+    <script src="/survey.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
