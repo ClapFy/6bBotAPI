@@ -50,9 +50,7 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
   const stopMovement = () => {
     try {
       bot.clearControlStates();
-    } catch {
-      // ignore
-    }
+    } catch {}
     try {
       bot.pathfinder?.setGoal(null);
     } catch {
@@ -117,9 +115,7 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
           client.write("player_loaded", {});
           log.info("Sky lobby: resent player_loaded before /skiplobby");
         }
-      } catch {
-        // ignore
-      }
+      } catch {}
       await sleep(400);
       log.info("Sky lobby: sending /skiplobby");
       sendCommand(bot, "skiplobby");

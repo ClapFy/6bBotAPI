@@ -344,9 +344,6 @@ async function runSession(
 
   if (options.daemon) {
     log.info(`Dashboard at ${server.url}  ·  CLI: krynbot status / krynbot chat`);
-    await new Promise(() => {
-      // keep process alive
-    });
     return;
   }
 

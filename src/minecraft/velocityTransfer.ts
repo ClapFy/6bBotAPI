@@ -29,14 +29,10 @@ export function attachVelocityTransfer(bot: Bot): void {
     bot.physicsEnabled = false;
     try {
       bot.clearControlStates();
-    } catch {
-      // ignore
-    }
+    } catch {}
     try {
       bot.pathfinder?.setGoal(null);
-    } catch {
-      // ignore
-    }
+    } catch {}
     log.info(`Entered configuration phase (${reason}); physics paused`);
   };
 

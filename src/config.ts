@@ -4,7 +4,16 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-dotenv.config({ path: path.join(root, ".env") });
+
+function envFileCandidates(): string[] {
+  const cwdEnv = path.resolve(process.cwd(), ".env");
+  const packageEnv = path.resolve(root, ".env");
+  return cwdEnv === packageEnv ? [packageEnv] : [cwdEnv, packageEnv];
+}
+
+for (const envPath of envFileCandidates()) {
+  dotenv.config({ path: envPath });
+}
 
 function envString(name: string, fallback = ""): string {
   const value = process.env[name];
@@ -42,10 +51,10 @@ export function loadConfig(overrides: Partial<KrynConfig> = {}): KrynConfig {
   const config: KrynConfig = {
     host: envString("KRYNBOT_HOST", "alt3.6b6t.org"),
     port: envNumber("KRYNBOT_PORT", 25565),
-    username: envString("KRYNBOT_USERNAME", "KrynoBot"),
+    username: envString("KRYNBOT_USERNAME"),
     password: envString("KRYNBOT_PASSWORD"),
     auth: authRaw === "microsoft" ? "microsoft" : "offline",
-    version: envString("KRYNBOT_VERSION", "1.21.8"),
+    version: envString("KRYNBOT_VERSION", "1.21.11"),
     viewDistance: envNumber("KRYNBOT_VIEW_DISTANCE", 6),
     controlHost: envString("KRYNBOT_CONTROL_HOST", "127.0.0.1"),
     controlPort: envNumber("KRYNBOT_CONTROL_PORT", 37637),
@@ -75,30 +84,24 @@ export function credentialsExist(config: KrynConfig): boolean {
 }
 
 export function configPath(): string {
-  return path.join(root, ".env");
-}
-
-export function ensureEnvFile(): void {
-  const envPath = path.join(root, ".env");
-  const example = path.join(root, ".env.example");
-  if (!fs.existsSync(envPath) && fs.existsSync(example)) {
-    fs.copyFileSync(example, envPath);
-    fs.chmodSync(envPath, 0o600);
+  for (const envPath of envFileCandidates()) {
+    if (fs.existsSync(envPath)) return envPath;
   }
+  return path.join(process.cwd(), ".env");
 }
 
 export function upsertEnvVar(key: string, value: string): void {
-  if (!/^[A-Z0-9_]+$/.test(key)) {
-    throw new Error("invalid env key");
-  }
-  const envPath = path.join(root, ".env");
+  if (!/^[A-Z0-9_]+$/.test(key)) throw new Error("invalid env key");
+  if (/[\r\n]/.test(value)) throw new Error("invalid env value");
+  const envPath = configPath();
   const line = `${key}=${value}`;
   let text = "";
   if (fs.existsSync(envPath)) {
     text = fs.readFileSync(envPath, "utf8");
     const re = new RegExp(`^${key}=.*$`, "m");
     text = re.test(text) ? text.replace(re, line) : `${text.replace(/\s*$/, "")}\n${line}\n`;
-    fs.writeFileSync(envPath, text);
+    fs.writeFileSync(envPath, text, { mode: 0o600 });
+    fs.chmodSync(envPath, 0o600);
     return;
   }
   fs.writeFileSync(envPath, `${line}\n`, { mode: 0o600 });

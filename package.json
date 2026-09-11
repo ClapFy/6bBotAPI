@@ -6,15 +6,19 @@
   "bin": {
     "krynbot": "./bin/krynbot.mjs"
   },
-  "main": "./src/index.ts",
+  "main": "./src/api/index.ts",
   "exports": {
-    ".": "./src/api/KrynBot.ts",
-    "./api": "./src/api/KrynBot.ts"
+    ".": "./src/api/index.ts",
+    "./api": "./src/api/index.ts",
+    "./config": "./src/config.ts",
+    "./logger": "./src/logger.ts",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "start": "tsx src/index.ts",
     "krynbot": "tsx src/index.ts",
     "dev": "tsx src/index.ts shell",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit"
   },

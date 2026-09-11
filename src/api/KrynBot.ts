@@ -307,9 +307,7 @@ export class KrynBot extends EventEmitter {
     bot.clearControlStates();
     try {
       bot.pathfinder?.setGoal(null);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 
   getPlayers(): PlayerInfo[] {
@@ -497,9 +495,7 @@ export class KrynBot extends EventEmitter {
       log.warn(`Kicked (loggedIn=${loggedIn}): ${text}`);
       try {
         log.warn(`Kick JSON: ${JSON.stringify(reason)}`);
-      } catch {
-        // ignore
-      }
+      } catch {}
       this.emit("kicked", text);
       this.auth?.destroy();
       this.navigator?.stop();

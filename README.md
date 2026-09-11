@@ -2,6 +2,8 @@
 
 Mineflayer control system for the 6b6t anarchy server. Offline-account join, stored `/login`, two server-lobby portals, auto-rejoin, a CLI with tab completion, and an HTTP/WebSocket control API you can plug other UIs into.
 
+This folder is the KrynBot library and control API (the [6bBotAPI](https://github.com/ClapFy/6bBotAPI) git repo). Chat ads, teleport accept/deny, and survival helpers live next door in `KrynSpammer`.
+
 Bots are allowed on 6b6t. The vanilla Minecraft client needs [AnarchyMod](https://github.com/6b6t/AnarchyMod) because Mojang blacklisted the IP. Mineflayer never uses that blacklist; this bot still sends the same `anarchymod:join` packet the mod sends after login.
 
 ## Setup
@@ -15,10 +17,10 @@ Put the offline username and in-game password in `.env` (never commit that file)
 
 ```
 KRYNBOT_HOST=alt3.6b6t.org
-KRYNBOT_USERNAME=KrynoBot
+KRYNBOT_USERNAME=your_account
 KRYNBOT_PASSWORD=...
 KRYNBOT_AUTH=offline
-KRYNBOT_VERSION=1.21.1
+KRYNBOT_VERSION=1.21.11
 ```
 
 Optionally install the CLI on your PATH:
@@ -26,6 +28,12 @@ Optionally install the CLI on your PATH:
 ```bash
 npm link
 eval "$(krynbot completion zsh)"   # or: krynbot completion bash
+```
+
+Start the control API and dashboard:
+
+```bash
+npm start
 ```
 
 ## CLI
@@ -81,8 +89,8 @@ Interact: `attack`, `dig`, `stopDig`, `place`, `activate`, `swing`, `inv`, `chat
 Join credentials and Minecraft host cannot be changed over the API — only via `.env` / CLI.
 
 ```ts
-import { KrynBot } from "./src/api/KrynBot.ts";
-import { loadConfig } from "./src/config.ts";
+import { KrynBot } from "krynbot";
+import { loadConfig } from "krynbot/config";
 
 const bot = new KrynBot(loadConfig());
 await bot.join();

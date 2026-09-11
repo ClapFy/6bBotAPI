@@ -150,9 +150,7 @@ export function persistDump(rootDir: string, dump: WorldDump): string {
   for (const extra of files.slice(0, Math.max(0, files.length - keep))) {
     try {
       fs.unlinkSync(path.join(dir, extra));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
   return file;
 }

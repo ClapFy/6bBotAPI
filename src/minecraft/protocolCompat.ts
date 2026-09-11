@@ -117,8 +117,6 @@ export function attachProtocolCompat(bot: Bot): void {
           },
         });
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   });
 }

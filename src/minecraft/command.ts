@@ -23,9 +23,7 @@ export function sendCommand(bot: Bot, command: string): void {
     if (/^(login|register|changepassword|l)\b/i.test(text)) return;
     try {
       bot.chat(`/${text}`);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 }
 

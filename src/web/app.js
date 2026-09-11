@@ -52,7 +52,7 @@ function setBar(id, value, max = 20) {
 
 function renderStatus(data) {
   status = data;
-  document.getElementById("ident-name").textContent = data.username || "KrynoBot";
+  document.getElementById("ident-name").textContent = data.username || "not configured";
   document.getElementById("ident-host").textContent = `${data.host}:${data.port} · ${data.version || "?"}`;
   const phase = document.getElementById("phase");
   phase.textContent = data.phase || "idle";

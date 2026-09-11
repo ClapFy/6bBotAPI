@@ -722,7 +722,7 @@ void main() {
   function setBot(pos, heading, name) {
     if (!pos) return;
     bot = {
-      name: name || bot?.name || "KrynoBot",
+      name: name || bot?.name || "unknown",
       kind: "bot",
       x: pos.x,
       y: pos.y,
