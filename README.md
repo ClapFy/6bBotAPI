@@ -2,8 +2,6 @@
 
 Mineflayer control system for the 6b6t anarchy server. Offline-account join, stored `/login`, two server-lobby portals, auto-rejoin, a CLI with tab completion, and an HTTP/WebSocket control API you can plug other UIs into.
 
-Bots are allowed on 6b6t. The vanilla Minecraft client needs [AnarchyMod](https://github.com/6b6t/AnarchyMod) because Mojang blacklisted the IP. Mineflayer never uses that blacklist; this bot still sends the same `anarchymod:join` packet the mod sends after login.
-
 ## Setup
 
 ```bash
