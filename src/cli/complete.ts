@@ -22,7 +22,6 @@ export const CLI_COMMANDS = [
   "catalog",
   "hunt",
   "unhunt",
-  "skiplobby",
   "shell",
   "completion",
   "help",

@@ -253,13 +253,6 @@ export async function runCli(argv = process.argv): Promise<void> {
     });
 
   program
-    .command("skiplobby")
-    .description("Send /skiplobby (fallback; default flow walks the two server portals)")
-    .action(async () => {
-      await proxyOrFail(loadConfig(), { action: "skiplobby" });
-    });
-
-  program
     .command("shell")
     .description("Open an interactive control shell (starts the API if needed)")
     .action(async () => {

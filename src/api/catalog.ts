@@ -38,7 +38,6 @@ export const API_ROUTES: ApiRoute[] = [
   { method: "POST", path: "/v1/rpc", auth: true, action: "respawn", desc: "press respawn" },
   { method: "POST", path: "/v1/rpc", auth: true, action: "hunt", desc: "walk server portals" },
   { method: "POST", path: "/v1/rpc", auth: true, action: "unhunt", desc: "stop portal hunting" },
-  { method: "POST", path: "/v1/rpc", auth: true, action: "skiplobby", desc: "send /skiplobby" },
   { method: "POST", path: "/v1/rpc", auth: true, action: "set", desc: "autoReconnect / autoLobby flags", body: { autoReconnect: true } },
 ];
 
@@ -50,7 +49,7 @@ export function apiCatalog() {
     movement: ["control", "jump", "stop", "goto", "look", "lookAt", "turn"],
     viewport: ["view", "voxels", "map", "block", "cursor", "dump", "entities", "players"],
     inventory: ["inventory", "inv"],
-    session: ["join", "leave", "reconnect", "respawn", "status", "set", "hunt", "unhunt", "skiplobby"],
+    session: ["join", "leave", "reconnect", "respawn", "status", "set", "hunt", "unhunt"],
     interact: ["attack", "dig", "stopDig", "place", "activate", "swing", "chat", "command"],
   };
 }
