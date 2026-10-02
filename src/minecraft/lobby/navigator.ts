@@ -5,7 +5,6 @@ import type { PortalTarget, WorldKind } from "../../api/types.ts";
 import { log } from "../../logger.ts";
 import { pickServerPortal, findPortalBlocks } from "./portals.ts";
 import { isLobbyLike } from "./worldKind.ts";
-import { sendCommand } from "../command.ts";
 
 export interface NavigatorHooks {
   onFound(portal: PortalTarget): void;
@@ -113,35 +112,19 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
         const client = bot._client as { write: (name: string, params: unknown) => void; state?: string };
         if (!client.state || client.state === "play") {
           client.write("player_loaded", {});
-          log.info("Sky lobby: resent player_loaded before /skiplobby");
+          log.info("Sky lobby: resent player_loaded before the second portal");
         }
-      } catch {}
-      await sleep(400);
-      log.info("Sky lobby: sending /skiplobby");
-      sendCommand(bot, "skiplobby");
-      const skipUntil = Date.now() + 6000;
-      while (Date.now() < skipUntil && !stopped) {
-        await sleep(200);
-        if (!bot.entity) return false;
-        const gm = String(bot.game?.gameMode ?? "").toLowerCase();
-        if (gm === "survival" || gm === "0") {
-          const here = bot.entity.position;
-          hooks.onEntered({
-            kind: "server",
-            position: { x: here.x, y: here.y, z: here.z },
-            distance: 0,
-            blockName: "skiplobby",
-          });
-          return true;
-        }
+      } catch {
+        // client may already be closing
       }
-      log.info("Sky lobby still adventure after /skiplobby; not walking into decorative portal wall");
-      hooks.onMiss("skiplobby ignored");
-      return false;
+      await sleep(400);
     }
 
-    const raw = findPortalBlocks(bot, 64);
+    const raw = findPortalBlocks(bot, 64, 2048);
     let portal = pickServerPortal(raw, worldKind, true);
+    if (!portal && raw.length > 0) {
+      log.info("Nearby portal blocks are not a normal 2×3 vanilla portal; skipping decorative portal wall");
+    }
     if (!portal) {
       const known = KNOWN_SERVER_PORTALS
         .map((spot) => ({ spot, distance: pos.distanceTo(new Vec3(spot.x, spot.y, spot.z)) }))
@@ -157,7 +140,7 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
       }
     }
     if (!portal) {
-      hooks.onMiss("no server portal in range");
+      hooks.onMiss(raw.length > 0 ? "no vanilla-sized server portal in range" : "no server portal in range");
       return false;
     }
 

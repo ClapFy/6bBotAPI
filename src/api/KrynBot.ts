@@ -159,11 +159,6 @@ export class KrynBot extends EventEmitter {
     sendCommand(this.requireBot(), command);
   }
 
-  skipLobby(): void {
-    const bot = this.requireBot();
-    sendCommand(bot, "skiplobby");
-  }
-
   goto(x: number, y: number, z: number, range = 1): void {
     const bot = this.requireBot();
     bot.pathfinder.setGoal(new goals.GoalNear(x, y, z, range));

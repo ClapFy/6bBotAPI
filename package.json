@@ -18,6 +18,7 @@
     "start": "tsx src/index.ts",
     "krynbot": "tsx src/index.ts",
     "dev": "tsx src/index.ts shell",
+    "test": "tsx --test src/minecraft/lobby/portals.test.ts src/minecraft/lobby/navigator.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit"

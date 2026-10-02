@@ -272,7 +272,6 @@ export type ControlRequest =
   | { action: "cursor" }
   | { action: "hunt" }
   | { action: "unhunt" }
-  | { action: "skiplobby" }
   | { action: "set"; autoReconnect?: boolean; autoLobby?: boolean }
   | { action: "catalog" };
 

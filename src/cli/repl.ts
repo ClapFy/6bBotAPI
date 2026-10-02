@@ -184,9 +184,6 @@ export async function handleReplLine(bot: KrynBot, line: string): Promise<void> 
       bot.stopPortalHunt();
       console.log("Portal hunt stopped");
       break;
-    case "skiplobby":
-      bot.skipLobby();
-      break;
     case "help":
       console.log(CLI_COMMANDS.join("\n"));
       break;

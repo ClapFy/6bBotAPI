@@ -345,9 +345,6 @@ async function dispatch(bot: KrynBot, request?: ControlRequest): Promise<Control
       case "unhunt":
         bot.stopPortalHunt();
         return { ok: true, data: bot.getStatus() };
-      case "skiplobby":
-        bot.skipLobby();
-        return { ok: true };
       case "set":
         bot.setFlags({ autoReconnect: request.autoReconnect, autoLobby: request.autoLobby });
         return { ok: true, data: bot.getStatus() };

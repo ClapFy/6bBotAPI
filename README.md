@@ -101,8 +101,6 @@ RPC actions: see `GET /v1/catalog`. Common ones include `join`, `leave`, `contro
 1. Connect offline to `alt3.6b6t.org` as Minecraft **1.21.11**.
 2. Send AnarchyMod `anarchymod:join`.
 3. `/login` with the stored password when the server asks.
-4. Offline accounts are sent to an End lobby island, then must walk **two server nether portals** (End island, then overworld sky lobby). Real nether portals in survival are ignored.
+4. Offline accounts are sent to an End lobby island, then must walk **two server nether portals** (End island, then overworld sky lobby). The first lobby portal is a normal vanilla nether portal (2×3 interior). Decorative portal walls are ignored. Real nether portals in survival are ignored.
 5. Lobby portal transfers go through Velocity; the bot pauses physics during that configuration phase so it is not kicked.
 6. If kicked, reconnect. If a lobby portal is missing, wait a minute and scan again.
-
-`/skiplobby` exists as a manual fallback (`krynbot skiplobby`) and is not used by default.
