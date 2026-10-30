@@ -121,7 +121,9 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
     }
 
     const raw = findPortalBlocks(bot, 64, 2048);
-    let portal = pickServerPortal(raw, worldKind, true);
+    const groundLobby = worldKind === "lobby" && dim.includes("overworld") &&
+      gm === "adventure" && pos.y >= 40 && pos.y <= 90;
+    let portal = pickServerPortal(raw, worldKind, true, groundLobby);
     if (!portal && raw.length > 0) {
       log.info("Nearby portal blocks are not a normal 2×3 vanilla portal; skipping decorative portal wall");
     }

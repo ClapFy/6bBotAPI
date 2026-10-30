@@ -133,3 +133,27 @@ test("does not walk into a decorative sky-lobby portal wall", async () => {
   assert.deepEqual(misses, ["no vanilla-sized server portal in range"]);
   assert.equal(mock.writes.includes("chat_command"), false);
 });
+
+test("enters the large portal in the ground-level overworld lobby", async () => {
+  const mock = createMockBot(new Vec3(247.5, 62, 228.5), "minecraft:overworld");
+  mock.state.blocks = [];
+  for (let x = 240; x <= 254; x++) {
+    for (let y = 62; y < 70; y++) mock.state.blocks.push(new Vec3(x, y, 220));
+  }
+  const found: PortalTarget[] = [];
+  const entered: PortalTarget[] = [];
+  const misses: string[] = [];
+  const navigator = createPortalNavigator(mock.bot, 60_000, {
+    onFound: (portal) => found.push(portal),
+    onEntered: (portal) => entered.push(portal),
+    onMiss: (reason) => misses.push(reason),
+    getWorldKind: () => "lobby",
+    allowServerPortals: () => true,
+  });
+
+  assert.equal(await settle(navigator.huntOnce(), 2_000), true);
+  assert.equal(found[0]?.position.x, 247.5);
+  assert.equal(found[0]?.position.z, 220.5);
+  assert.equal(entered.length, 1);
+  assert.deepEqual(misses, []);
+});

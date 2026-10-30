@@ -127,15 +127,29 @@ export function pickServerPortal(
   portals: PortalTarget[],
   worldKind: WorldKind,
   allowServerPortals: boolean,
+  allowLargePortals = false,
 ): PortalTarget | null {
   const classified = classifyPortals(portals, worldKind, allowServerPortals);
   const servers = classified.filter((portal) => portal.kind === "server" && portal.blockName === "nether_portal");
   if (servers.length === 0) return null;
 
-  const vanilla = clusterTouching(servers).filter(isNormalVanillaPortal);
-  if (vanilla.length === 0) return null;
-  vanilla.sort((a, b) => minDistance(a) - minDistance(b));
-  const clusterPortals = vanilla[0];
+  const clusters = clusterTouching(servers);
+  let candidates = clusters.filter(isNormalVanillaPortal);
+  // The ground-level lobby uses a large portal wall as its actual exit.
+  // Keep preferring vanilla portals, and require a vertical plane for this fallback.
+  if (candidates.length === 0 && allowLargePortals) {
+    candidates = clusters.filter((blocks) => {
+      const spans = ["x", "y", "z"].map((axis) => {
+        const values = blocks.map((block) => block.position[axis as "x" | "y" | "z"]);
+        return Math.max(...values) - Math.min(...values);
+      });
+      const [x, y, z] = spans;
+      return y >= 2 && ((x === 0 && z >= 1) || (z === 0 && x >= 1));
+    });
+  }
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => minDistance(a) - minDistance(b));
+  const clusterPortals = candidates[0];
   if (!clusterPortals?.length) return null;
 
   const cx = average(clusterPortals.map((p) => p.position.x + 0.5));

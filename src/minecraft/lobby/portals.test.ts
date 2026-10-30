@@ -74,3 +74,12 @@ test("returns null when the only portal blocks are a decorative wall", () => {
 test("does not treat survival nether portals as lobby exits", () => {
   assert.equal(pickServerPortal(vanillaPortal(0, 64, 0, "x", 3), "overworld", false), null);
 });
+
+test("large lobby exits require opt-in and still prefer vanilla portals", () => {
+  const wall = decorativeWall(2);
+  assert.ok(pickServerPortal(wall, "lobby", true, true));
+  assert.equal(pickServerPortal(wall, "overworld", true, true), null);
+  assert.equal(pickServerPortal(wall, "lobby", false, true), null);
+  const picked = pickServerPortal([...wall, ...vanillaPortal(12, 64, 0, "z", 9)], "lobby", true, true);
+  assert.equal(picked?.position.x, 12.5);
+});
