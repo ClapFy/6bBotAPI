@@ -41,10 +41,45 @@ function inPortalBlock(bot: Bot): boolean {
   return names.some((name) => name === "nether_portal" || name === "end_gateway" || name === "end_portal");
 }
 
+function portalExit(bot: Bot): Vec3 | undefined {
+  const pos = bot.entity.position;
+  const origin = pos.floored();
+  const candidates: Vec3[] = [];
+  const clearAt = (point: Vec3, allowPortal: boolean): boolean => {
+    const ground = bot.blockAt(point.offset(0, -1, 0).floored());
+    if (ground?.boundingBox !== "block" || /magma|campfire|cactus/.test(ground.name)) return false;
+    for (const dx of [-0.3, 0.3]) {
+      for (const dz of [-0.3, 0.3]) {
+        for (const dy of [0, 1]) {
+          const block = bot.blockAt(point.offset(dx, dy, dz).floored());
+          if (!block || block.boundingBox !== "empty") return false;
+          if (/water|lava|fire|powder_snow/.test(block.name)) return false;
+          if (!allowPortal && /portal|gateway/.test(block.name)) return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  for (let dx = -3; dx <= 3; dx++) {
+    for (let dz = -3; dz <= 3; dz++) {
+      const target = origin.offset(dx + 0.5, 0, dz + 0.5);
+      const distance = pos.distanceTo(target);
+      if (distance < 2 || distance > 4 || !clearAt(target, false)) continue;
+      const steps = Math.ceil(distance / 0.25);
+      const delta = target.minus(pos).scaled(1 / steps);
+      if (Array.from({ length: steps }, (_, i) => pos.plus(delta.scaled(i + 1)))
+        .every((point) => clearAt(point, true))) candidates.push(target);
+    }
+  }
+  return candidates.sort((a, b) => pos.distanceTo(a) - pos.distanceTo(b))[0];
+}
+
 export function createPortalNavigator(bot: Bot, retryMs: number, hooks: NavigatorHooks): PortalNavigator {
   let hunting = false;
   let stopped = false;
   let lastPos = bot.entity?.position?.clone();
+  let portalEntryTimedOut = false;
 
   const stopMovement = () => {
     try {
@@ -67,11 +102,13 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
       const dim = String(bot.game?.dimension ?? "");
       const gm = String(bot.game?.gameMode ?? "").toLowerCase();
       if (gm === "survival" || gm === "0" || dim !== startDim) {
+        portalEntryTimedOut = false;
         hooks.onEntered(portal);
         return true;
       }
       await sleep(200);
     }
+    if (!stopped) portalEntryTimedOut = true;
     return false;
   };
 
@@ -81,6 +118,40 @@ export function createPortalNavigator(bot: Bot, retryMs: number, hooks: Navigato
     if (!hooks.allowServerPortals() || (!isLobbyLike(worldKind) && worldKind !== "unknown")) {
       return false;
     }
+
+    // A join-cooldown rejection only triggers again after leaving the portal.
+    // Give an entry its normal transfer window, then step outside on retry.
+    if (portalEntryTimedOut && inPortalBlock(bot)) {
+      const exit = portalExit(bot);
+      if (!exit) {
+        hooks.onMiss("no safe place to step out of portal");
+        return false;
+      }
+      log.info("Already inside server portal; stepping out before retrying");
+      stopMovement();
+      const dimension = String(bot.game?.dimension ?? "");
+      const deadline = Date.now() + 5_000;
+      while (!stopped && bot.entity && Date.now() < deadline) {
+        if (!hooks.allowServerPortals() || String(bot.game?.dimension ?? "") !== dimension) {
+          stopMovement();
+          return false;
+        }
+        if (!inPortalBlock(bot) && bot.entity.position.distanceTo(exit) < 0.5) break;
+        await bot.lookAt(exit.offset(0, 1.2, 0), true);
+        if (stopped) return false;
+        bot.setControlState("forward", true);
+        bot.setControlState("sprint", false);
+        await sleep(150);
+      }
+      stopMovement();
+      if (stopped || !bot.entity || inPortalBlock(bot) || bot.entity.position.distanceTo(exit) >= 0.5) {
+        hooks.onMiss("could not step out of portal");
+        return false;
+      }
+      await sleep(1_500);
+      if (stopped || !hooks.allowServerPortals() || String(bot.game?.dimension ?? "") !== dimension) return false;
+    }
+    portalEntryTimedOut = false;
 
     const pos = bot.entity.position;
     const dim = String(bot.game?.dimension ?? "").toLowerCase();

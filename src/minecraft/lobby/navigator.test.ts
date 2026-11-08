@@ -157,3 +157,80 @@ test("enters the large portal in the ground-level overworld lobby", async () => 
   assert.equal(entered.length, 1);
   assert.deepEqual(misses, []);
 });
+
+test("leaves and reenters a portal rejected by the join cooldown", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  const mock = createMockBot(new Vec3(0.5, 64, 3.5), "minecraft:the_end");
+  mock.state.blocks = vanillaBlocks(new Vec3(0, 64, 0), "x");
+  const entered: PortalTarget[] = [];
+  const misses: string[] = [];
+  let target = mock.entity.position.clone();
+  let rejected = false;
+  let leftPortal = false;
+  let cooldownUntil = 0;
+  const inside = () => Math.floor(mock.entity.position.z) === 0;
+  mock.bot.blockAt = ((pos: Vec3) => {
+    if (pos.y < 64) return { name: "stone", boundingBox: "block" };
+    const portal = mock.state.blocks.some((p) => p.equals(pos.floored()));
+    return { name: portal ? "nether_portal" : "air", boundingBox: "empty" };
+  }) as Bot["blockAt"];
+  mock.bot.clearControlStates = () => {};
+  mock.bot.lookAt = async (pos: Vec3) => { target = pos; };
+  mock.bot.setControlState = (key, value) => {
+    if (key !== "forward" || !value) return;
+    const wasInside = inside();
+    const delta = target.minus(mock.entity.position);
+    delta.y = 0;
+    const distance = delta.norm();
+    if (distance > 0) mock.entity.position = mock.entity.position.plus(delta.scaled(Math.min(0.4 / distance, 1)));
+    if (wasInside && !inside()) leftPortal = true;
+    if (!wasInside && inside()) {
+      if (!rejected) {
+        rejected = true;
+        cooldownUntil = Date.now() + 1000;
+      } else if (leftPortal && Date.now() >= cooldownUntil) {
+        mock.game.dimension = "minecraft:overworld";
+        mock.game.gameMode = "survival";
+      }
+    }
+  };
+  const navigator = createPortalNavigator(mock.bot, 60_000, {
+    onFound: () => {},
+    onEntered: (portal) => entered.push(portal),
+    onMiss: (reason) => misses.push(reason),
+    getWorldKind: () => "lobby",
+    allowServerPortals: () => true,
+  });
+  const runHunt = async () => {
+    let result: boolean | undefined;
+    const work = navigator.huntOnce().then((value) => { result = value; });
+    for (let elapsed = 0; elapsed < 35_000 && result === undefined; elapsed += 100) {
+      t.mock.timers.tick(100);
+      for (let turn = 0; turn < 10; turn++) await Promise.resolve();
+    }
+    assert.notEqual(result, undefined, "hunt must finish within its movement/transfer deadlines");
+    await work;
+    return result;
+  };
+
+  try {
+    assert.equal(await runHunt(), false, "first entry is rejected during cooldown");
+    assert.equal(inside(), true);
+    assert.equal(entered.length, 0);
+
+    const blockAt = mock.bot.blockAt;
+    const rejectedPosition = mock.entity.position.clone();
+    mock.bot.blockAt = ((pos: Vec3) => pos.y < 64 ? null : blockAt(pos)) as Bot["blockAt"];
+    assert.equal(await runHunt(), false, "retry must not walk over an unloaded floor or void");
+    assert.ok(mock.entity.position.equals(rejectedPosition));
+    assert.deepEqual(misses, ["no safe place to step out of portal"]);
+    mock.bot.blockAt = blockAt;
+
+    assert.equal(await runHunt(), true, "retry must leave the portal before entering again");
+    assert.equal(leftPortal, true);
+    assert.equal(entered.length, 1);
+    assert.equal(mock.game.gameMode, "survival");
+  } finally {
+    navigator.stop();
+  }
+});
